@@ -1,7 +1,6 @@
 import FormButton from "@/components/form-btn";
 import FormInput from "@/components/form-input";
-import { ChatBubbleOvalLeftEllipsisIcon } from "@heroicons/react/24/solid";
-import Link from "next/link";
+import SocialLogin from "@/components/social-login";
 
 export default function CreateAccount() {
   return (
@@ -13,8 +12,12 @@ export default function CreateAccount() {
         </h2>
       </div>
       <form className="flex flex-col gap-3">
-        <FormInput type="text" placeholder="닉네임" required errors={[]} />
-        <FormInput type="email" placeholder="이메일" required errors={[]} />
+        <FormInput
+          type="email"
+          placeholder="이메일 (로그인 시 아이디로 사용)"
+          required
+          errors={[]}
+        />
         <FormInput
           type="password"
           placeholder="비밀번호"
@@ -27,20 +30,10 @@ export default function CreateAccount() {
           required
           errors={[]}
         />
+        <FormInput type="text" placeholder="닉네임" required errors={[]} />
         <FormButton loading={false} text="계정 만들기" />
       </form>
-      <div className="w-full h-px bg-neutral-500" />
-      <div>
-        <Link
-          className="primary-btn flex h-10 items-center justify-center gap-3"
-          href="/sms"
-        >
-          <span>
-            <ChatBubbleOvalLeftEllipsisIcon className="h-6 w-6" />
-          </span>
-          <span>SMS로 가입하기</span>
-        </Link>
-      </div>
+      <SocialLogin />
     </div>
   );
 }
