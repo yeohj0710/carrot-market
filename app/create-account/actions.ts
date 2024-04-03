@@ -1,8 +1,11 @@
 "use server";
 
+import {
+  PASSWORD_MIN_LENGTH,
+  PASSWORD_REGEX,
+  PASSWORD_REGEX_ERROR,
+} from "@/lib/constants";
 import { z } from "zod";
-
-const passwordRegex = new RegExp(/^(?=.*[a-z]).+$/);
 
 const checkUsername = (username: string) => !username.includes("여형준");
 
@@ -28,12 +31,9 @@ const formSchema = z
     email: z.string().email(),
     password: z
       .string()
-      .min(3, "비밀번호는 3글자 이상이어야 합니다.")
-      .regex(
-        passwordRegex,
-        "비밀번호는 최소 1글자 이상의 영문자를 포함해야 합니다."
-      ),
-    confirm_password: z.string().min(3),
+      .min(PASSWORD_MIN_LENGTH, "비밀번호는 3글자 이상이어야 합니다.")
+      .regex(PASSWORD_REGEX, PASSWORD_REGEX_ERROR),
+    confirm_password: z.string().min(PASSWORD_MIN_LENGTH),
   })
   .refine(checkPasswords, {
     message: "비밀번호가 일치하지 않습니다.",
