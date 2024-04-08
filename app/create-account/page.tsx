@@ -42,11 +42,11 @@ export default function CreateAccount() {
           minLength={PASSWORD_MIN_LENGTH}
         />
         <Input
-          name="username"
+          name="nickname"
           type="text"
           placeholder="닉네임"
           required
-          errors={state?.fieldErrors.username}
+          errors={state?.fieldErrors.nickname}
           minLength={3}
           maxLength={12}
         />
