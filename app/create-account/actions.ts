@@ -64,7 +64,6 @@ const formSchema = z
   .superRefine(async ({ nickname }, ctx) => {
     const user = await db.user.findUnique({
       where: {
-        //@ts-ignore
         nickname,
       },
       select: {
@@ -99,7 +98,6 @@ export async function createAccount(prevState: any, formData: FormData) {
       data: {
         email: result.data.email,
         password: hashedPassword,
-        //@ts-ignore
         nickname: result.data.nickname,
       },
       select: {
