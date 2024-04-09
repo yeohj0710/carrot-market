@@ -1,5 +1,6 @@
 "use server";
 
+import bcrypt from "bcrypt";
 import {
   PASSWORD_MIN_LENGTH,
   PASSWORD_REGEX,
@@ -7,6 +8,9 @@ import {
 } from "@/lib/constants";
 import db from "@/lib/db";
 import { z } from "zod";
+import { getIronSession } from "iron-session";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
 const checkNickname = (nickname: string) => !nickname.includes("여형준");
 
@@ -33,6 +37,7 @@ const checkUniqueEmail = async (email: string) => {
 const checkUniqueNickname = async (nickname: string) => {
   const user = await db.user.findUnique({
     where: {
+      //@ts-ignore
       nickname,
     },
     select: {
@@ -80,6 +85,25 @@ export async function createAccount(prevState: any, formData: FormData) {
   if (!result.success) {
     return result.error.flatten();
   } else {
-    console.log("성공");
+    const hashedPassword = await bcrypt.hash(result.data.password, 12);
+    const user = await db.user.create({
+      data: {
+        email: result.data.email,
+        password: hashedPassword,
+        //@ts-ignore
+        nickname: result.data.nickname,
+      },
+      select: {
+        id: true,
+      },
+    });
+    const cookie = await getIronSession(cookies(), {
+      cookieName: "test",
+      password: process.env.COOKIE_PASSWORD!,
+    });
+    //@ts-ignore
+    cookie.id = user.id;
+    await cookie.save();
+    redirect("/profile");
   }
 }
