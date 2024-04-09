@@ -8,51 +8,14 @@ import {
 } from "@/lib/constants";
 import db from "@/lib/db";
 import { z } from "zod";
-import { getIronSession } from "iron-session";
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import getSession from "@/lib/session";
 
 const checkNickname = (nickname: string) => !nickname.includes("여형준");
 
-const checkPasswords = ({
-  password,
-  confirm_password,
-}: {
-  password: string;
-  confirm_password: string;
-}) => password === confirm_password;
-
-const checkUniqueEmail = async (email: string) => {
-  const user = await db.user.findUnique({
-    where: {
-      email,
-    },
-    select: {
-      id: true,
-    },
-  });
-  return !Boolean(user);
-};
-
-const checkUniqueNickname = async (nickname: string) => {
-  const user = await db.user.findUnique({
-    where: {
-      //@ts-ignore
-      nickname,
-    },
-    select: {
-      id: true,
-    },
-  });
-  return !Boolean(user);
-};
-
 const formSchema = z
   .object({
-    email: z
-      .string()
-      .email()
-      .refine(checkUniqueEmail, "이미 사용 중인 이메일입니다."),
+    email: z.string().email(),
     password: z
       .string()
       .min(PASSWORD_MIN_LENGTH, "비밀번호는 3글자 이상이어야 합니다.")
@@ -66,12 +29,57 @@ const formSchema = z
       .min(3, "닉네임은 3글자 이상이어야 합니다.")
       .max(12, "닉네임은 12글자 이하여야 합니다.")
       .trim()
-      .refine(checkNickname, "운영자의 이름은 닉네임에 포함할 수 없습니다.")
-      .refine(checkUniqueNickname, "이미 사용 중인 닉네임입니다."),
+      .refine(checkNickname, "운영자의 이름은 닉네임에 포함할 수 없습니다."),
   })
-  .refine(checkPasswords, {
-    message: "비밀번호가 일치하지 않습니다.",
-    path: ["confirm_password"],
+  .superRefine(async ({ email }, ctx) => {
+    const user = await db.user.findUnique({
+      where: {
+        email,
+      },
+      select: {
+        id: true,
+      },
+    });
+    if (user) {
+      ctx.addIssue({
+        code: "custom",
+        message: "이미 사용 중인 이메일입니다.",
+        path: ["email"],
+        fatal: true,
+      });
+      return z.NEVER;
+    }
+  })
+  .superRefine(({ password, confirm_password }, ctx) => {
+    if (password !== confirm_password) {
+      ctx.addIssue({
+        code: "custom",
+        message: "비밀번호가 일치하지 않습니다.",
+        path: ["confirm_password"],
+        fatal: true,
+      });
+      return z.NEVER;
+    }
+  })
+  .superRefine(async ({ nickname }, ctx) => {
+    const user = await db.user.findUnique({
+      where: {
+        //@ts-ignore
+        nickname,
+      },
+      select: {
+        id: true,
+      },
+    });
+    if (user) {
+      ctx.addIssue({
+        code: "custom",
+        message: "이미 사용 중인 닉네임입니다.",
+        path: ["nickname"],
+        fatal: true,
+      });
+      return z.NEVER;
+    }
   });
 
 export async function createAccount(prevState: any, formData: FormData) {
@@ -83,6 +91,7 @@ export async function createAccount(prevState: any, formData: FormData) {
   };
   const result = await formSchema.safeParseAsync(data);
   if (!result.success) {
+    // console.log(result.error.flatten());
     return result.error.flatten();
   } else {
     const hashedPassword = await bcrypt.hash(result.data.password, 12);
@@ -97,13 +106,9 @@ export async function createAccount(prevState: any, formData: FormData) {
         id: true,
       },
     });
-    const cookie = await getIronSession(cookies(), {
-      cookieName: "test",
-      password: process.env.COOKIE_PASSWORD!,
-    });
-    //@ts-ignore
-    cookie.id = user.id;
-    await cookie.save();
+    const session = await getSession();
+    session.id = user.id;
+    await session.save();
     redirect("/profile");
   }
 }
