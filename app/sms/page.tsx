@@ -25,8 +25,6 @@ export default function SMSLogin() {
             type="number"
             placeholder="인증번호"
             required
-            min={100000}
-            max={999999}
             errors={state.error?.formErrors}
           />
         ) : (
