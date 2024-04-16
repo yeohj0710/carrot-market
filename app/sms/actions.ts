@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import db from "@/lib/db";
 import crypto from "crypto";
 import getSession from "@/lib/session";
+import twilio from "twilio";
 
 const phoneSchema = z
   .string()
@@ -63,6 +64,7 @@ export async function smsLogin(prevState: ActionState, formData: FormData) {
         error: result.error.flatten(),
       };
     } else {
+      result.data = "+82" + result.data;
       await db.sMSToken.deleteMany({
         where: {
           user: {
@@ -86,6 +88,15 @@ export async function smsLogin(prevState: ActionState, formData: FormData) {
             },
           },
         },
+      });
+      const client = twilio(
+        process.env.TWILIO_ACCOUNT_SID,
+        process.env.TWILIO_AUTH_TOKEN
+      );
+      await client.messages.create({
+        body: `carrot-market 인증번호는 ${token}입니다.`,
+        from: process.env.TWILIO_PHONE_NUMBER!,
+        to: process.env.MY_PHONE_NUMBER!, // In a paid account, 'result.data'
       });
       return {
         token: true,

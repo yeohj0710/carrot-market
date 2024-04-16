@@ -28,13 +28,18 @@ export default function SMSLogin() {
             errors={state.error?.formErrors}
           />
         ) : (
-          <Input
-            name="phone"
-            type="number"
-            placeholder="전화번호"
-            required
-            errors={state.error?.formErrors}
-          />
+          <div className="items-center grid grid-cols-10">
+            <span className="col-span-1 ml-1 text-gray-500 text-lg">+82</span>
+            <div className="col-span-9">
+              <Input
+                name="phone"
+                type="text"
+                placeholder="전화번호"
+                required
+                errors={state.error?.formErrors}
+              />
+            </div>
+          </div>
         )}
         <Button text={state.token ? "인증하기" : "인증번호 받기"} />
       </form>
