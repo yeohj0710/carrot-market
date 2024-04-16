@@ -94,7 +94,7 @@ export async function smsLogin(prevState: ActionState, formData: FormData) {
         process.env.TWILIO_AUTH_TOKEN
       );
       await client.messages.create({
-        body: `carrot-market 인증번호는 ${token}입니다.`,
+        body: `당근마켓 인증번호는 ${token}입니다.`,
         from: process.env.TWILIO_PHONE_NUMBER!,
         to: process.env.MY_PHONE_NUMBER!, // In a paid account, 'result.data'
       });
