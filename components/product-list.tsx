@@ -49,7 +49,7 @@ export default function ProductList({ initialProducts }: ProductListProps) {
   }, [page]);
   return (
     <div className="p-5 flex flex-col gap-5">
-      {products.map((product) => (
+      {/* {products.map((product) => (
         <ListProduct key={product.id} {...product} />
       ))}
       {!isLastPage ? (
@@ -59,7 +59,7 @@ export default function ProductList({ initialProducts }: ProductListProps) {
         >
           {isLoading ? "상품 로드 중..." : "상품 더 보기"}
         </span>
-      ) : null}
+      ) : null} */}
     </div>
   );
 }
