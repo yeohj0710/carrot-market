@@ -4,7 +4,11 @@ import { PhotoIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import { useRouter } from "next/navigation";
 
 export default function Modal({ params }: { params: { id: string } }) {
+  const id = Number(params.id);
   const router = useRouter();
+  if (isNaN(id)) {
+    window.location.reload();
+  }
   const onCloseClick = () => {
     router.back();
   };
