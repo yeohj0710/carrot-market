@@ -8,10 +8,10 @@ import { notFound } from "next/navigation";
 import { unstable_cache as nextCache, revalidateTag } from "next/cache";
 
 async function getIsOwner(userId: number) {
-  const session = await getSession();
-  if (session.id) {
-    return session.id === userId;
-  }
+  // const session = await getSession();
+  // if (session.id) {
+  //   return session.id === userId;
+  // }
   return false;
 }
 
@@ -33,7 +33,7 @@ export async function getProduct(id: number) {
 }
 
 const getCachedProduct = nextCache(getProduct, ["product-detail"], {
-  revalidate: 10,
+  revalidate: 30,
   tags: ["product-detail", "carrot"],
 });
 
@@ -50,12 +50,12 @@ export async function getProductTitle(id: number) {
 }
 
 const getCachedProductTitle = nextCache(getProductTitle, ["product-title"], {
-  revalidate: 10,
+  revalidate: 30,
   tags: ["product-title", "carrot"],
 });
 
 export async function generateMetadata({ params }: { params: { id: string } }) {
-  const product = await getCachedProductTitle(Number(params.id));
+  const product = await getProductTitle(Number(params.id));
   return {
     title: product?.title,
   };
@@ -70,7 +70,7 @@ export default async function ProductDetail({
   if (isNaN(id)) {
     return notFound();
   }
-  const product = await getCachedProduct(id);
+  const product = await getProduct(id);
   if (!product) {
     return notFound();
   }
@@ -120,11 +120,11 @@ export default async function ProductDetail({
             <button className="bg-red-500 px-5 py-2.5 rounded-md text-white font-semibold">
               상품 내리기
             </button>
-            <form action={revalidate}>
+            {/* <form action={revalidate}>
               <button className="bg-orange-500 px-5 py-2.5 rounded-md text-white font-semibold">
                 상품 정보 업데이트
               </button>
-            </form>
+            </form> */}
           </>
         ) : null}
         <Link
@@ -136,4 +136,13 @@ export default async function ProductDetail({
       </div>
     </div>
   );
+}
+
+export async function generateStaticParams() {
+  const products = await db.product.findMany({
+    select: {
+      id: true,
+    },
+  });
+  return products.map((product) => ({ id: product.id + "" }));
 }
