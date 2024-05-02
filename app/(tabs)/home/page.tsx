@@ -8,7 +8,7 @@ import Link from "next/link";
 const getCachedProducts = nextCache(getInitialProducts, ["home-products"]);
 
 async function getInitialProducts() {
-  console.log("hit");
+  // console.log("hit");
   const products = await db.product.findMany({
     select: {
       title: true,
