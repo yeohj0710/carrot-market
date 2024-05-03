@@ -14,7 +14,7 @@ async function getIsOwner(userId: number) {
   return false;
 }
 
-export async function getProduct(id: number) {
+async function getProduct(id: number) {
   const product = await db.product.findUnique({
     where: {
       id,
@@ -36,7 +36,7 @@ const getCachedProduct = nextCache(getProduct, ["product-detail"], {
   tags: ["product-detail", "carrot"],
 });
 
-export async function getProductTitle(id: number) {
+async function getProductTitle(id: number) {
   const product = await db.product.findUnique({
     where: {
       id,
